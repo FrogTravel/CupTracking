@@ -11,8 +11,11 @@ def detect_blue_color(img):
     for i in range(0, img_copy.shape[0]):
         for j in range(0, img_copy.shape[1]):
             if (20 < img_red[i, j] < 50 and \
-                40 < img_green[i, j] < 60 and \
-                60 < img_blue[i, j] < 255):
+                32 < img_green[i, j] < 60 and \
+                55 < img_blue[i, j] < 255) or \
+                    (10 < img_red[i, j] < 27 and \
+                     20 < img_green[i, j] < 33 and \
+                     27 < img_blue[i, j] < 47):
                 img_copy[i, j] = 255
             else:
                 img_copy[i, j] = 0
@@ -25,10 +28,13 @@ def dilation_erosion(img):
     kernel = np.ones((2, 2), np.uint8)
     erosion = cv2.erode(img_copy, kernel, iterations=1)
 
-    kernel = np.ones((4, 4), np.uint8)
-    dilation = cv2.dilate(erosion, kernel, iterations=4)
+    kernel = np.ones((3, 3), np.uint8)
+    dilation = cv2.dilate(erosion, kernel, iterations=10)
 
-    return dilation
+    kernel = np.ones((5, 5), np.uint8)
+    erosion = cv2.erode(dilation, kernel, iterations=2)
+
+    return erosion
 
 
 if __name__ == '__main__':
@@ -41,11 +47,10 @@ if __name__ == '__main__':
 
         frame_copy = frame.copy()
         result_frame = frame.copy()
+        frame_copy = cv2.GaussianBlur(frame_copy, (15, 15), 0)
         frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
         frame_copy = cv2.resize(frame_copy, (int(frame_copy.shape[1] / down_sample_factor),
                                              int(frame_copy.shape[0] / down_sample_factor)))
-        frame_copy = cv2.GaussianBlur(frame_copy, (5, 5), 0)
-        cv2.imshow('Blur', frame_copy)
 
         img_blue_detected = detect_blue_color(frame_copy)
 
@@ -61,8 +66,6 @@ if __name__ == '__main__':
 
         contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-        # cv2.drawContours(result_frame, contours, 0, (255,0,0), 3)
-
         for c in contours:
             rect = cv2.minAreaRect(c)
             box = cv2.boxPoints(rect)
@@ -74,6 +77,7 @@ if __name__ == '__main__':
                 cv2.drawContours(result_frame, [box], 0, (255, 255, 0), 3)
 
         cv2.imshow('Video', result_frame)
+        cv2.imshow('Preproc', img_preprocessed)
         # cv2.imshow('Blue', img_blue_detected)
         # cv2.imshow('Dilation', img_preprocessed)
         # cv2.imshow('Scaled to orig', img_gray)
