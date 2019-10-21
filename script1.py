@@ -143,8 +143,8 @@ if __name__ == '__main__':
 
             is_on_video = False
 
-        cv2.imshow('Video', result_frame)
-        ch = 0xFF & cv2.waitKey(1)
-        if ch == 27:
-            break
-    cv2.destroyAllWindows()
+        # cv2.imshow('Video', result_frame)
+        # ch = 0xFF & cv2.waitKey(1)
+        # if ch == 27:
+        #     break
+    # cv2.destroyAllWindows()
