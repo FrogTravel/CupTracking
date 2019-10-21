@@ -128,7 +128,7 @@ if __name__ == '__main__':
 
                 # Saving image if cup appeared on the screen
                 if not is_on_video:
-                    cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/appeared/' + str(ap_counter) + '.png',
+                    cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/web/static/appeared/' + str(ap_counter) + '.png',
                                 frame)
                     ap_counter += 1
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         # If not found and it is the first time -> saving an image
         if len(contours) == 0:  # not found
             if is_on_video:
-                cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/disappeared/' + str(dis_counter) + '.png',
+                cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/web/static/disappeared/' + str(dis_counter) + '.png',
                             frame)
                 dis_counter += 1
 
