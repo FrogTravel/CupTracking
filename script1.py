@@ -107,7 +107,7 @@ if __name__ == '__main__':
         img_resized = cv2.resize(img_preprocessed,
                                  (int(frame.shape[1]), int(frame.shape[0])))
 
-        img_gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY)
+        img_gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY) # Need to work with find_contours method
 
         contours = find_contours(img_gray)
 
@@ -126,6 +126,7 @@ if __name__ == '__main__':
                 if (len(tracking_path) > 1):
                     cv2.polylines(result_frame, np.int32([tracking_path]), 0, (255, 0, 255), 3)
 
+                # Saving image if cup appeared on the screen
                 if not is_on_video:
                     cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/appeared/' + str(ap_counter) + '.png',
                                 frame)
@@ -133,6 +134,7 @@ if __name__ == '__main__':
 
                 is_on_video = True
 
+        # If not found and it is the first time -> saving an image
         if len(contours) == 0:  # not found
             if is_on_video:
                 cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/disappeared/' + str(dis_counter) + '.png',
