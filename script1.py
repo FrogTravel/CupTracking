@@ -5,6 +5,8 @@ down_sample_factor = 8
 tracking_path = []
 
 
+# Bluring image to reduce noise
+# Resizing so it will proceed faster
 def preprocess(img):
     img_copy = img.copy()
 
@@ -16,6 +18,7 @@ def preprocess(img):
     return img_copy
 
 
+# Color detection for light and dark blue color
 def detect_blue_color(img):
     img_copy = img.copy()
     img_red, img_green, img_blue = cv2.split(img_copy)
@@ -35,6 +38,7 @@ def detect_blue_color(img):
     return img_copy
 
 
+# Erosion followed by dilation followed again by erosion gives not bad shape of a cup
 def dilation_erosion(img):
     img_copy = img.copy()
     kernel = np.ones((2, 2), np.uint8)
@@ -49,15 +53,17 @@ def dilation_erosion(img):
     return erosion
 
 
+# Finding contours of the cup from thresholded image
 def find_contours(img):
     img_copy = img.copy()
-    th = 65
+    th = 65 # Just because, magic number. Any number from 0 to 254 (I guess) will work
     _, img_bin = cv2.threshold(img_copy, th, 255, 0)
 
     contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
 
+# I tried to implement intel logo tracking, but tired
 def get_img_from_box(box):
     a, b, d, e, = box
     height = max(abs(a[1] - b[1]), abs(a[1] - d[1]), abs(a[1] - e[1]), abs(b[1] - d[1]), abs(d[1] - e[1]))
@@ -68,6 +74,7 @@ def get_img_from_box(box):
     return result_frame[y:y + height, x:x + width]
 
 
+# Returns center from box from contours so it can be tracked
 def get_center_from_box(box):
     a, b, d, e, = box
     height = max(abs(a[1] - b[1]), abs(a[1] - d[1]), abs(a[1] - e[1]), abs(b[1] - d[1]), abs(d[1] - e[1]))
@@ -75,12 +82,11 @@ def get_center_from_box(box):
     x = min(a[0], b[0], d[0], e[0])
     y = min(a[1], b[1], d[1], e[1])
 
-    return [x + int(width/2), y + int(height/2)]
+    return [x + int(width / 2), y + int(height / 2)]
+
 
 if __name__ == '__main__':
     cap = cv2.VideoCapture('cup.ogv')
-    # _, frame = cap.read()
-    # out = cv2.VideoWriter('0output.avi', -1, 20.0, (frame.shape[0], frame.shape[1]))
     is_on_video = False
     ap_counter = 0
     dis_counter = 0
@@ -117,32 +123,26 @@ if __name__ == '__main__':
 
                 tracking_path.append(get_center_from_box(box))
 
-                if(len(tracking_path) > 1):
-                 cv2.polylines(result_frame, np.int32([tracking_path]), 0, (255, 0, 255), 3)
+                if (len(tracking_path) > 1):
+                    cv2.polylines(result_frame, np.int32([tracking_path]), 0, (255, 0, 255), 3)
 
                 if not is_on_video:
-                    cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/appeared/' + str(ap_counter) + '.png', frame)
+                    cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/appeared/' + str(ap_counter) + '.png',
+                                frame)
                     ap_counter += 1
 
                 is_on_video = True
 
-        if len(contours) == 0: # not found
-            print("no cup")
+        if len(contours) == 0:  # not found
             if is_on_video:
-                print("flag")
-                cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/disappeared/' + str(dis_counter) + '.png', frame)
+                cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/disappeared/' + str(dis_counter) + '.png',
+                            frame)
                 dis_counter += 1
 
             is_on_video = False
 
         cv2.imshow('Video', result_frame)
-        cv2.imshow('Preproc', img_preprocessed)
-        # out.write(frame)
-        # cv2.imshow('Blue', img_blue_detected)
-        # cv2.imshow('Dilation', img_preprocessed)
-        # cv2.imshow('Scaled to orig', img_gray)
         ch = 0xFF & cv2.waitKey(1)
         if ch == 27:
             break
-    # out.release()
     cv2.destroyAllWindows()
