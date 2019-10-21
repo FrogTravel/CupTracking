@@ -6,6 +6,8 @@ If the cup appeared the first time, or it is the first frame when it disappears 
 
 ## How to run
 
+### Tracking script 
+
 To run the script first install  ```python3``` and ```opencv2```. 
 
 To install opencv2 with pip run 
@@ -14,3 +16,13 @@ To install opencv2 with pip run
 ```numpy``` will be installed automatically in case you do not have it
 
 Then run ```python script1.py```
+
+### Web service
+
+To run web service install ```flask``` via command ```pip3 install flask```
+
+Run script first and then run ```python web_service.py```
+
+http://127.0.0.1:5000/appeared - Images where the cup appeared 
+
+http://127.0.0.1:5000/disappeared - Images where the cup disappeared
