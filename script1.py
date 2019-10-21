@@ -81,6 +81,9 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture('cup.ogv')
     # _, frame = cap.read()
     # out = cv2.VideoWriter('0output.avi', -1, 20.0, (frame.shape[0], frame.shape[1]))
+    is_on_video = False
+    ap_counter = 0
+    dis_counter = 0
 
     while True:
         _, frame = cap.read()
@@ -116,6 +119,21 @@ if __name__ == '__main__':
 
                 if(len(tracking_path) > 1):
                  cv2.polylines(result_frame, np.int32([tracking_path]), 0, (255, 0, 255), 3)
+
+                if not is_on_video:
+                    cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/appeared/' + str(ap_counter) + '.png', frame)
+                    ap_counter += 1
+
+                is_on_video = True
+
+        if len(contours) == 0: # not found
+            print("no cup")
+            if is_on_video:
+                print("flag")
+                cv2.imwrite('/Users/ekaterina/PycharmProjects/testtaskmax/disappeared/' + str(dis_counter) + '.png', frame)
+                dis_counter += 1
+
+            is_on_video = False
 
         cv2.imshow('Video', result_frame)
         cv2.imshow('Preproc', img_preprocessed)
