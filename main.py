@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 
 down_sample_factor = 8
+tracking_path = []
 
 
 def preprocess(img):
@@ -56,6 +57,7 @@ def find_contours(img):
     contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     return contours
 
+
 def get_img_from_box(box):
     a, b, d, e, = box
     height = max(abs(a[1] - b[1]), abs(a[1] - d[1]), abs(a[1] - e[1]), abs(b[1] - d[1]), abs(d[1] - e[1]))
@@ -65,8 +67,20 @@ def get_img_from_box(box):
 
     return result_frame[y:y + height, x:x + width]
 
+
+def get_center_from_box(box):
+    a, b, d, e, = box
+    height = max(abs(a[1] - b[1]), abs(a[1] - d[1]), abs(a[1] - e[1]), abs(b[1] - d[1]), abs(d[1] - e[1]))
+    width = max(abs(a[0] - b[0]), abs(a[0] - d[0]), abs(a[0] - e[0]), abs(b[0] - d[0]), abs(d[0] - e[0]))
+    x = min(a[0], b[0], d[0], e[0])
+    y = min(a[1], b[1], d[1], e[1])
+
+    return [x + int(width/2), y + int(height/2)]
+
 if __name__ == '__main__':
     cap = cv2.VideoCapture('cup.ogv')
+    # _, frame = cap.read()
+    # out = cv2.VideoWriter('0output.avi', -1, 20.0, (frame.shape[0], frame.shape[1]))
 
     while True:
         _, frame = cap.read()
@@ -98,13 +112,19 @@ if __name__ == '__main__':
             if width > 50 and height > 50:
                 cv2.drawContours(result_frame, [box], 0, (255, 255, 0), 3)
 
+                tracking_path.append(get_center_from_box(box))
+
+                if(len(tracking_path) > 1):
+                 cv2.polylines(result_frame, np.int32([tracking_path]), 0, (255, 0, 255), 3)
+
         cv2.imshow('Video', result_frame)
         cv2.imshow('Preproc', img_preprocessed)
+        # out.write(frame)
         # cv2.imshow('Blue', img_blue_detected)
         # cv2.imshow('Dilation', img_preprocessed)
         # cv2.imshow('Scaled to orig', img_gray)
         ch = 0xFF & cv2.waitKey(1)
         if ch == 27:
             break
-
+    # out.release()
     cv2.destroyAllWindows()
