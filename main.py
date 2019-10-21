@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-down_sample_factor = 10
+down_sample_factor = 8
 
 
 def detect_blue_color(img):
@@ -10,14 +10,25 @@ def detect_blue_color(img):
 
     for i in range(0, img_copy.shape[0]):
         for j in range(0, img_copy.shape[1]):
-            if 20 < img_red[i, j] < 50 and \
-                    40 < img_green[i, j] < 60 and \
-                    60 < img_blue[i, j] < 255:
+            if (20 < img_red[i, j] < 50 and \
+                40 < img_green[i, j] < 60 and \
+                60 < img_blue[i, j] < 255):
                 img_copy[i, j] = 255
             else:
                 img_copy[i, j] = 0
 
     return img_copy
+
+
+def dilation_erosion(img):
+    img_copy = img.copy()
+    kernel = np.ones((2, 2), np.uint8)
+    erosion = cv2.erode(img_copy, kernel, iterations=1)
+
+    kernel = np.ones((4, 4), np.uint8)
+    dilation = cv2.dilate(erosion, kernel, iterations=4)
+
+    return dilation
 
 
 if __name__ == '__main__':
@@ -29,14 +40,43 @@ if __name__ == '__main__':
             break
 
         frame_copy = frame.copy()
+        result_frame = frame.copy()
         frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
         frame_copy = cv2.resize(frame_copy, (int(frame_copy.shape[1] / down_sample_factor),
                                              int(frame_copy.shape[0] / down_sample_factor)))
+        frame_copy = cv2.GaussianBlur(frame_copy, (5, 5), 0)
+        cv2.imshow('Blur', frame_copy)
 
         img_blue_detected = detect_blue_color(frame_copy)
 
-        cv2.imshow('Video', frame)
-        cv2.imshow('Blue', img_blue_detected)
+        img_preprocessed = dilation_erosion(img_blue_detected)
+
+        img_resized = cv2.resize(img_preprocessed,
+                                 (int(frame.shape[1]), int(frame.shape[0])))
+
+        img_gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY)
+
+        th = 65
+        _, img_bin = cv2.threshold(img_gray, th, 255, 0)
+
+        contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+        # cv2.drawContours(result_frame, contours, 0, (255,0,0), 3)
+
+        for c in contours:
+            rect = cv2.minAreaRect(c)
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+
+            width = rect[1][0]
+            height = rect[1][1]
+            if width > 50 and height > 50:
+                cv2.drawContours(result_frame, [box], 0, (255, 255, 0), 3)
+
+        cv2.imshow('Video', result_frame)
+        # cv2.imshow('Blue', img_blue_detected)
+        # cv2.imshow('Dilation', img_preprocessed)
+        # cv2.imshow('Scaled to orig', img_gray)
         ch = 0xFF & cv2.waitKey(1)
         if ch == 27:
             break
