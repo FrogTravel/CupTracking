@@ -4,6 +4,17 @@ import cv2
 down_sample_factor = 8
 
 
+def preprocess(img):
+    img_copy = img.copy()
+
+    img_copy = cv2.GaussianBlur(img_copy, (15, 15), 0)
+    img_copy = cv2.cvtColor(img_copy, cv2.COLOR_BGR2RGB)
+    img_copy = cv2.resize(img_copy, (int(img_copy.shape[1] / down_sample_factor),
+                                     int(img_copy.shape[0] / down_sample_factor)))
+
+    return img_copy
+
+
 def detect_blue_color(img):
     img_copy = img.copy()
     img_red, img_green, img_blue = cv2.split(img_copy)
@@ -37,6 +48,15 @@ def dilation_erosion(img):
     return erosion
 
 
+def find_contours(img):
+    img_copy = img.copy()
+    th = 65
+    _, img_bin = cv2.threshold(img_copy, th, 255, 0)
+
+    contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    return contours
+
+
 if __name__ == '__main__':
     cap = cv2.VideoCapture('cup.ogv')
 
@@ -45,12 +65,9 @@ if __name__ == '__main__':
         if frame is None:
             break
 
-        frame_copy = frame.copy()
         result_frame = frame.copy()
-        frame_copy = cv2.GaussianBlur(frame_copy, (15, 15), 0)
-        frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BGR2RGB)
-        frame_copy = cv2.resize(frame_copy, (int(frame_copy.shape[1] / down_sample_factor),
-                                             int(frame_copy.shape[0] / down_sample_factor)))
+
+        frame_copy = preprocess(frame)
 
         img_blue_detected = detect_blue_color(frame_copy)
 
@@ -61,10 +78,7 @@ if __name__ == '__main__':
 
         img_gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY)
 
-        th = 65
-        _, img_bin = cv2.threshold(img_gray, th, 255, 0)
-
-        contours, _ = cv2.findContours(img_bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        contours = find_contours(img_gray)
 
         for c in contours:
             rect = cv2.minAreaRect(c)
