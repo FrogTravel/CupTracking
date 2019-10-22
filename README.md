@@ -6,7 +6,7 @@ If the cup appeared the first time, or it is the first frame when it disappears 
 
 ## How to run
 
-This is the first time I tried to make ```requirements.txt``` file. Run ```pip install -r requeriments.txt``` I hope it works.
+This is the first time I tried to make ```requirements.txt``` file. Run ```pip install -r requirements.txt``` I hope it works.
 In case it is doesn't, do following steps.
 
 ### Tracking script 
