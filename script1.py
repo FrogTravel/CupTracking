@@ -64,14 +64,14 @@ def find_contours(img):
 
 
 # I tried to implement intel logo tracking, but tired
-def get_img_from_box(box):
+def get_img_from_box(img, box):
     a, b, d, e, = box
     height = max(abs(a[1] - b[1]), abs(a[1] - d[1]), abs(a[1] - e[1]), abs(b[1] - d[1]), abs(d[1] - e[1]))
     width = max(abs(a[0] - b[0]), abs(a[0] - d[0]), abs(a[0] - e[0]), abs(b[0] - d[0]), abs(d[0] - e[0]))
     x = min(a[0], b[0], d[0], e[0])
     y = min(a[1], b[1], d[1], e[1])
 
-    return result_frame[y:y + height, x:x + width]
+    return img[y:y + height, x:x + width]
 
 
 # Returns center from box from contours so it can be tracked
